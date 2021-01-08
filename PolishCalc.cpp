@@ -8,10 +8,25 @@
 #include <queue>
 using namespace std;
 
+queue<string> inputs;
+stack<string> operators;
+queue<string> result;
+
+void ShowPolishQueue()
+{
+	queue<string> buf = result;
+	int size = buf.size();
+	for (int i = 0; i < size; i++)
+	{
+		cout << buf.front() << " ";
+		buf.pop();
+	}
+	cout << endl;
+}
+
 queue<string> ParseInputs(string _input)
 {
-	cout << _input << endl;
-
+	//cout << _input << endl;
 	queue<string> result;
 	result.push("a");
 	int numberStart = -1;
@@ -47,164 +62,149 @@ queue<string> ParseInputs(string _input)
 	return result;
 }
 
-stack<string> MakePolish(string _input)
-{
-	//   ( 8.0 + 2 * 5 ) / ( 1 + 3 * 2 - 4 )
-	queue<string> inputs = ParseInputs(_input);
-	stack<string> operators;
-	stack<string> result;
 
+
+void f1()
+{
 	operators.push(inputs.front());
 	inputs.pop();
+}
 
-	cout << "results: ";
-	stack<string> buf = result;
-	int size = buf.size();
-	for (int i = 0; i < size; i++)
-	{
-		cout << buf.top() << " ";
-		buf.pop();
-	}
-	cout << endl;
+void f2()
+{
+	result.push(operators.top());
+	operators.pop();
+}
 
-	cout << "operators: ";
-	stack<string> buf2 = operators;
-	int size2 = buf2.size();
-	for (int i = 0; i < size2; i++)
-	{
-		cout << buf2.top() << " ";
-		buf2.pop();
-	}
-	cout << endl;
+void f3()
+{
+	operators.pop();
+	inputs.pop();
+}
 
-	cout << "inputs: ";
-	queue<string> buf1 = inputs;
-	int size1 = buf1.size();
-	for (int i = 0; i < size1; i++)
-	{
-		cout << buf1.front() << " ";
-		buf1.pop();
-	}
-	cout << endl;
+void fnumber()
+{
+	result.push(inputs.front());
+	inputs.pop();
+}
 
+queue<string> MakePolish(string _input)
+{
+	//   ( 8.0 + 2 * 5 ) / ( 1 + 3 * 2 - 4 )
+	inputs = ParseInputs(_input);
+
+	f1();
 
 	while (!inputs.empty())
-	{
+	{		
 		string s = inputs.front();
 		switch (s[0])
 		{
-		case '(':
-		{
-			operators.push(s);
-			break;
-		}
-		case ')':
-		{
-			switch (operators.top()[0])
-			{
-			case 'a':
-			{
-				cout << "Error 5" << endl;
-				break;
-			}
 			case '(':
 			{
-				operators.pop();
+				f1();
+				break;
+			}
+			case ')':
+			{
+				switch (operators.top()[0])
+				{
+				case 'a':
+				{
+					cout << "Error 5" << endl;
+					break;
+				}
+				case '(':
+				{
+					f3();
+					break;
+				}
+				default:
+				{
+					f2();
+					break;
+				}
+				}
+				break;
+			}
+			case '+':
+			{
+				if (operators.top()[0] == 'a' || operators.top()[0] == '(')
+				{
+					f1();
+				}
+				else
+				{
+					f2();
+				}
+				break;
+			}
+			case '-':
+			{
+				if (operators.top()[0] == 'a' || operators.top()[0] == '(')
+				{
+					f1();
+				}
+				else
+				{
+					f2();
+				}
+				break;
+			}
+			case '/':
+			{
+				if (operators.top()[0] == '*' || operators.top()[0] == '/')
+				{
+					f2();
+				}
+				else
+				{
+					f1();
+				}
+				break;
+			}
+			case '*':
+			{
+				if (operators.top()[0] == '*' || operators.top()[0] == '/')
+				{
+					f2();
+				}
+				else
+				{
+					f1();
+				}
+				break;
+			}
+			case 'a':
+			{
+				switch (operators.top()[0])
+				{
+				case 'a':
+				{
+					return result;
+					break;
+				}
+				case '(':
+				{
+					cout << "Error 5" << endl;
+					break;
+				}
+				default:
+				{
+					f2();
+					break;
+				}
+				}
 				break;
 			}
 			default:
 			{
-				result.push(operators.top());
-				operators.pop();
+				fnumber();
 				break;
 			}
-			}
-			break;
 		}
-		case '+':
-		{
-			if (operators.top()[0] == 'a' || operators.top()[0] == '(')
-			{
-				operators.push(s);
-			}
-			else
-			{
-				result.push(operators.top());
-				operators.pop();
-			}
-			break;
-		}
-		case '-':
-		{
-			if (operators.top()[0] == 'a' || operators.top()[0] == '(')
-			{
-				operators.push(s);
-			}
-			else
-			{
-				result.push(operators.top());
-				operators.pop();
-			}
-			break;
-		}
-		case '/':
-		{
-			if (operators.top()[0] == '*' || operators.top()[0] == '/')
-			{
-				result.push(operators.top());
-				operators.pop();
-			}
-			else
-			{
-				operators.push(s);
-			}
-			break;
-		}
-		case '*':
-		{
-			if (operators.top()[0] == '*' || operators.top()[0] == '/')
-			{
-				result.push(operators.top());
-				operators.pop();
-			}
-			else
-			{
-				operators.push(s);
-			}
-			break;
-		}
-		case 'a':
-		{
-			switch (operators.top()[0])
-			{
-			case 'a':
-			{
-				cout << "Error 4" << endl;
-				break;
-			}
-			case '(':
-			{
-				cout << "Error 5" << endl;
-				break;
-			}
-			default:
-			{
-				result.push(operators.top());
-				operators.pop();
-				break;
-			}
-			}
-			break;
-		}
-		default:
-		{
-			result.push(s);
-			break;
-		}
-		}
-		inputs.pop();
 
-		cout << "results: ";
+		/*cout << "results: ";
 		stack<string> buf = result;
 		int size = buf.size();
 		for (int i = 0; i < size; i++)
@@ -232,39 +232,117 @@ stack<string> MakePolish(string _input)
 			cout << buf1.front() << " ";
 			buf1.pop();
 		}
-		cout << endl;
-
-		
-
-		
+		cout << endl;*/
 
 	}
-
-
-	
 
 	return result;
 }
 
+double CalcPolish()
+{
+	double output = 0;
+	stack<double> args;
+
+	while (!result.empty())
+	{
+		//ShowPolishQueue();
+
+		string s = result.front();
+
+		/*cout << "args: ";
+		stack<double> buf2 = args;
+		int size2 = buf2.size();
+		for (int i = 0; i < size2; i++)
+		{
+			cout << buf2.top() << " ";
+			buf2.pop();
+		}
+		cout << endl;*/
+
+
+		if (s[0] == '+' ||
+			s[0] == '-' ||
+			s[0] == '/' ||
+			s[0] == '*')
+		{
+			double right = args.top();
+			args.pop();
+			double left = args.top();
+			args.pop();
+			
+			switch (s[0])
+			{
+				case '+':
+				{
+					args.push(left + right);
+					break;
+				}
+				case '-':
+				{
+					args.push(left - right);
+					break;
+				}
+				case '*':
+				{
+					args.push(left * right);
+					break;
+				}
+				case '/':
+				{
+					args.push(left / right);
+					break;
+				}			
+			}
+			result.pop();
+		}
+		else
+		{
+			args.push(stod(s));
+			result.pop();
+		}
+	}
+
+	return args.top();
+}
+
+bool CheckInput(string _input)
+{
+	return true;
+}
+
+
+void MakeRandomInputs()
+{
+
+}
+
+
 double Calc(string _input)
 {
-	//check
-
-
-	stack<string> polish = MakePolish(_input);
-	//polish
-	//calc polish
-
-	return 0;
+	if (CheckInput(_input))
+	{
+		queue<string> polish = MakePolish(_input);
+		return CalcPolish();
+	}
+	else
+	{
+		cout << "Некорректное выражение.";
+		return 0;
+	}
 }
 
 int main()
 {
-	string input = "(8.0+2*5)/(1+3*2-4)";
-	//cin >> input;
+	//string input = "(8.0+2*5)/(1+3*2-4)";
+	string input;
 
-	cout << Calc(input) << endl;
-
+	while (true)
+	{
+		cout << "Enter the expression: ";
+		cin >> input;
+		cout << Calc(input) << endl;
+	}
 	_getch();
 }
 
